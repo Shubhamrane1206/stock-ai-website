@@ -1,0 +1,6 @@
+Flask
+yfinance
+numpy
+scikit-learn
+vaderSentiment
+requests

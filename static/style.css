@@ -1,0 +1,370 @@
+/* ============================================================
+    GLOBAL RESET & BASE
+============================================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #0a0f25, #020617, #0f172a);
+    color: #e2e8f0;
+    min-height: 100vh;
+    padding: 30px 0;
+    transition: 0.3s;
+}
+
+.page-container {
+    width: 90%;
+    max-width: 1100px;
+    margin: auto;
+}
+
+
+/* ============================================================
+    LIGHT MODE
+============================================================ */
+body.light {
+    background: #eef1f5;
+    color: #111827;
+}
+
+body.light .glass {
+    background: rgba(255, 255, 255, 0.72);
+    border-color: rgba(0,0,0,0.15);
+    color: #111;
+}
+
+body.light .header h1 {
+    background: linear-gradient(90deg, #2563eb, #7c3aed);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+body.light .content-card {
+    background: rgba(255, 255, 255, 0.45);
+}
+
+
+/* ============================================================
+    HEADER
+============================================================ */
+.header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.header-top {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+}
+
+.header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, #38bdf8, #6366f1);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.header p {
+    color: #94a3b8;
+    margin-top: 5px;
+}
+
+#themeToggle {
+    padding: 7px 10px;
+    font-size: 1.2rem;
+    border: none;
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#themeToggle:hover {
+    transform: scale(1.1);
+}
+
+
+/* ============================================================
+    MAIN CARD
+============================================================ */
+.content-card {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    padding: 25px;
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(148,163,184,0.25);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.45);
+}
+
+/* ============================================================
+    FORM
+============================================================ */
+.form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.field {
+    flex: 1 1 45%;
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin-bottom: 6px;
+    font-size: 0.95rem;
+}
+
+input {
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #475569;
+    background: #0f172a;
+    color: #e2e8f0;
+}
+
+body.light input {
+    background: #f9fafb;
+    color: #111;
+    border-color: #d1d5db;
+}
+
+input:focus {
+    outline: none;
+    border-color: #38bdf8;
+    box-shadow: 0 0 8px rgba(56,189,248,0.5);
+}
+
+.predict-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #38bdf8, #6366f1);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    margin-top: 10px;
+    transition: 0.25s;
+}
+
+.predict-btn:hover {
+    transform: scale(1.04);
+    box-shadow: 0 12px 22px rgba(56, 189, 248, 0.4);
+}
+
+
+/* ============================================================
+    SPINNER
+============================================================ */
+#loading-spinner {
+    display: none;
+    width: 60px;
+    height: 60px;
+    border: 6px solid #3b82f6;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* ============================================================
+    GLASS BOXES
+============================================================ */
+.glass {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(148,163,184,0.3);
+    border-radius: 15px;
+    padding: 20px;
+    margin-top: 25px;
+    backdrop-filter: blur(12px);
+}
+
+/* ============================================================
+    PREDICTION SUMMARY
+============================================================ */
+.big-price {
+    font-size: 2.4rem;
+    color: #4ade80;
+    margin: 10px 0;
+}
+
+.summary-text {
+    font-size: 1rem;
+}
+
+.tagline {
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: #94a3b8;
+}
+
+/* ============================================================
+    SIGNALS
+============================================================ */
+.signal-row {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    gap: 10px;
+}
+
+.signal-title {
+    font-size: 1rem;
+}
+
+.signal-badge {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.signal-buy {
+    background: rgba(34, 197, 94, 0.2);
+    border: 1px solid #22c55e;
+    color: #bbf7d0;
+}
+
+.signal-sell {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid #ef4444;
+    color: #fecaca;
+}
+
+.signal-hold {
+    background: rgba(234, 179, 8, 0.2);
+    border: 1px solid #eab308;
+    color: #fef3c7;
+}
+
+.signal-change {
+    font-size: 0.9rem;
+    color: #cbd5e1;
+}
+
+.signal-desc {
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+
+/* ============================================================
+    METRICS
+============================================================ */
+.metrics-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.metric-card {
+    flex: 1 1 260px;
+}
+
+.metric-text {
+    font-size: 0.9rem;
+}
+
+.metric-footnote {
+    font-size: 0.8rem;
+    color: #9ca3af;
+}
+
+
+/* ============================================================
+    NEWS LIST
+============================================================ */
+.news-list {
+    margin-top: 10px;
+    padding-left: 18px;
+}
+
+.news-list li {
+    margin-bottom: 6px;
+    line-height: 1.4;
+}
+
+.news-sentiment {
+    font-size: 0.8rem;
+    color: #cbd5e1;
+}
+
+
+/* ============================================================
+    TABLE
+============================================================ */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+}
+
+th {
+    text-align: left;
+    padding: 10px;
+    background: rgba(56, 189, 248, 0.15);
+}
+
+td {
+    padding: 10px;
+    border-bottom: 1px solid rgba(148,163,184,0.25);
+}
+
+
+/* ============================================================
+    CHARTS
+============================================================ */
+.chart-container {
+    width: 100%;
+    min-height: 300px;
+}
+
+.chart-container canvas {
+    width: 100% !important;
+    height: 300px !important;
+}
+
+
+/* ============================================================
+    PORTFOLIO CALCULATOR
+============================================================ */
+.portfolio-box {
+    margin-top: 25px;
+}
+
+.portfolio-grid {
+    display: flex;
+    gap: 20px;
+}
+
+/* ============================================================
+    FOOTER
+============================================================ */
+.footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+body.light .footer {
+    color: #4b5563;
+}

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Stock Market Predictor</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- Only Chart.js (no financial plugin needed now) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+<div class="page-container">
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-top">
+            <h1>AI Stock Market Predictor</h1>
+            <button id="themeToggle">🌙</button>
+        </div>
+        <p>Real Market Data • Machine Learning • Trading Insights</p>
+    </header>
+
+    <!-- MAIN CONTENT CARD -->
+    <div class="content-card">
+
+        <!-- FORM -->
+        <form method="POST" class="form" id="predictForm">
+            <div class="field">
+                <label>Stock Symbol</label>
+                <input type="text" name="stock_name" placeholder="e.g., TCS, INFY, RELIANCE" required>
+            </div>
+
+            <div class="field">
+                <label>Predict Days Ahead</label>
+                <input type="number" name="days" value="5" min="1" max="30" required>
+            </div>
+
+            <button class="predict-btn">Run AI Prediction</button>
+        </form>
+
+        <!-- LOADING SPINNER -->
+        <div id="loading-spinner"></div>
+
+        <!-- ERROR -->
+        {% if error %}
+        <div class="error-box">⚠️ {{ error }}</div>
+        {% endif %}
+
+        <!-- PREDICTION SUMMARY -->
+        {% if prediction %}
+        <div class="glass result-summary">
+            <h2>Prediction Summary</h2>
+            <p class="summary-text">
+                Expected price after {{ forecast_labels|length if forecast_labels else 0 }} days:
+            </p>
+
+            <div class="big-price">₹ {{ prediction }}</div>
+
+            {% if signal_label %}
+            <div class="signal-row">
+                <span class="signal-title">Signal:</span>
+
+                {% if signal_label == "BUY" %}
+                    <span class="signal-badge signal-buy">BUY</span>
+                {% elif signal_label == "SELL" %}
+                    <span class="signal-badge signal-sell">SELL</span>
+                {% else %}
+                    <span class="signal-badge signal-hold">HOLD</span>
+                {% endif %}
+
+                {% if signal_change_pct is not none %}
+                <span class="signal-change">
+                    (Next day: {{ signal_change_pct }}%)
+                </span>
+                {% endif %}
+            </div>
+            <p class="signal-desc">{{ signal_desc }}</p>
+            {% endif %}
+
+            <p class="tagline">
+                * This is an AI-based educational prediction, not financial advice.
+            </p>
+        </div>
+        {% endif %}
+
+        <!-- SENTIMENT + MODEL ACCURACY -->
+        {% if sentiment_label or metric_mae %}
+        <div class="glass metrics-row">
+
+            {% if sentiment_label %}
+            <div class="metric-card">
+                <h3>Technical Sentiment</h3>
+                <div class="sentiment-pill {{ sentiment_label|lower }}">
+                    {{ sentiment_label }}
+                </div>
+                <p class="metric-text">{{ sentiment_text }}</p>
+            </div>
+            {% endif %}
+
+            {% if metric_mae %}
+            <div class="metric-card">
+                <h3>Model Accuracy</h3>
+                <p class="metric-text">
+                    MAE: <b>{{ "%.2f"|format(metric_mae) }}</b><br>
+                    MAPE: <b>{{ "%.2f"|format(metric_mape) }}%</b>
+                </p>
+                <p class="metric-footnote">Lower is better.</p>
+            </div>
+            {% endif %}
+
+        </div>
+        {% endif %}
+
+        <!-- NEWS SENTIMENT -->
+        {% if news_sentiment_label %}
+        <div class="glass forecast-box">
+            <h2>News Sentiment</h2>
+            <p class="metric-text">
+                Latest Headlines Sentiment: <b>{{ news_sentiment_label }}</b>
+            </p>
+
+            {% if news_headlines %}
+            <ul class="news-list">
+                {% for n in news_headlines %}
+                <li>
+                    {{ n.title }}
+                    <span class="news-sentiment">(score: {{ "%.2f"|format(n.sentiment) }})</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="metric-footnote">No news available.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- FORECAST TABLE -->
+        {% if forecast_list %}
+        <div class="glass forecast-box">
+            <h2>Forecast Table</h2>
+            <table>
+                <tr>
+                    <th>Date</th>
+                    <th>Predicted Price (₹)</th>
+                </tr>
+                {% for row in forecast_list %}
+                <tr>
+                    <td>{{ row.date }}</td>
+                    <td>{{ row.price }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        {% endif %}
+
+        <!-- LINE CHART ONLY -->
+        {% if historical_labels %}
+        <div class="glass chart-box">
+            <h2>Historical vs AI Forecast</h2>
+            <div class="chart-container">
+                <canvas id="priceChart"></canvas>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <footer class="footer">
+        Built by SHUBHAM RANE
+    </footer>
+</div>
+
+
+<!-- JSON DATA FROM BACKEND (NO CANDLES NOW) -->
+{% if historical_labels %}
+<script id="chartData" type="application/json">
+{
+    "historical_labels": {{ historical_labels | tojson | safe }},
+    "historical_values": {{ historical_values | tojson | safe }},
+    "forecast_labels": {{ forecast_labels | tojson | safe if forecast_labels else [] }},
+    "forecast_values": {{ forecast_values | tojson | safe if forecast_values else [] }}
+}
+</script>
+{% endif %}
+
+
+<!-- JS: THEME, SPINNER, LINE CHART -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("predictForm");
+    const spinner = document.getElementById("loading-spinner");
+    const themeToggle = document.getElementById("themeToggle");
+
+    // Show spinner on submit
+    if (form) {
+        form.addEventListener("submit", () => {
+            if (spinner) spinner.style.display = "block";
+        });
+    }
+
+    // Theme toggle
+    if (themeToggle) {
+        themeToggle.addEventListener("click", () => {
+            document.body.classList.toggle("light");
+            themeToggle.textContent = document.body.classList.contains("light") ? "🌞" : "🌙";
+        });
+    }
+
+    // Chart data
+    const script = document.getElementById("chartData");
+    if (!script) return;
+
+    const data = JSON.parse(script.textContent);
+
+    const histLabels = data.historical_labels || [];
+    const histValues = data.historical_values || [];
+    const foreLabels = data.forecast_labels || [];
+    const foreValues = data.forecast_values || [];
+
+    // LINE CHART (ONLY)
+    if (histLabels.length) {
+        const ctx = document.getElementById("priceChart").getContext("2d");
+
+        new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: histLabels.concat(foreLabels),
+                datasets: [
+                    {
+                        label: "Historical Price",
+                        data: histValues.concat(new Array(foreValues.length).fill(null)),
+                        borderColor: "#3b82f6",
+                        borderWidth: 2,
+                        tension: 0.25,
+                        pointRadius: 0
+                    },
+                    {
+                        label: "AI Forecast",
+                        data: new Array(histValues.length).fill(null).concat(foreValues),
+                        borderColor: "#10b981",
+                        borderWidth: 2,
+                        tension: 0.25,
+                        pointRadius: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { ticks: { color: "#9ca3af" }, grid: { display: false } },
+                    y: { ticks: { color: "#9ca3af" } }
+                }
+            }
+        });
+    }
+});
+</script>
+
+</body>
+</html>
